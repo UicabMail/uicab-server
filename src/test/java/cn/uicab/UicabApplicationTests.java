@@ -1,4 +1,4 @@
-package cn.uicab.uicab;
+package cn.uicab;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
