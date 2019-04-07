@@ -1,4 +1,4 @@
-package cn.uicab;
+package cn.boen.uicab;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

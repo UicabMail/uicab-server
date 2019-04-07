@@ -1,4 +1,4 @@
-package cn.uicab.service;
+package cn.boen.uicab.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 
 @Service
-public class MailService{
+public class SMTPService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 

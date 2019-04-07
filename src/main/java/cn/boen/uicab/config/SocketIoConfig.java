@@ -1,4 +1,4 @@
-package cn.uicab.config;
+package cn.boen.uicab.config;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;

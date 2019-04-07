@@ -1,9 +1,9 @@
-package cn.uicab.service;
+package cn.boen.uicab.service;
 
-import cn.uicab.entity.Message;
-import cn.uicab.entity.User;
-import cn.uicab.mapper.UserMapper;
-import cn.uicab.statics.EventType;
+import cn.boen.uicab.entity.Message;
+import cn.boen.uicab.entity.User;
+import cn.boen.uicab.mapper.UserMapper;
+import cn.boen.uicab.statics.EventType;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import org.springframework.beans.factory.annotation.Autowired;

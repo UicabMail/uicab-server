@@ -1,4 +1,4 @@
-package cn.uicab.statics;
+package cn.boen.uicab.statics;
 
 public enum UserStatus {
 

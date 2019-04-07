@@ -1,4 +1,4 @@
-package cn.uicab.handler;
+package cn.boen.uicab.handler;
 
 import com.corundumstudio.socketio.SocketIOServer;
 import org.springframework.beans.factory.annotation.Autowired;

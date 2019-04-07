@@ -1,4 +1,4 @@
-package cn.uicab.statics;
+package cn.boen.uicab.statics;
 
 public class EventType {
     public static final String INITIALIZATION  =  "-1";

@@ -1,6 +1,6 @@
-package cn.uicab.service;
+package cn.boen.uicab.service;
 
-import cn.uicab.statics.EventType;
+import cn.boen.uicab.statics.EventType;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.annotation.OnConnect;
@@ -19,7 +19,11 @@ public class SocketService {
     private SocketIOServer server;
 
     @Autowired
-    private MailService mailService;
+    private  SMTPService smtpService;
+
+    @Autowired
+    private IMAPService imapService;
+
 
     private static Map<String, SocketIOClient> clientsMap = new HashMap<String, SocketIOClient>();
 

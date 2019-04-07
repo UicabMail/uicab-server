@@ -1,7 +1,7 @@
-package cn.uicab.service;
+package cn.boen.uicab.service;
 
-import cn.uicab.entity.Message;
-import cn.uicab.statics.EventType;
+import cn.boen.uicab.entity.Message;
+import cn.boen.uicab.statics.EventType;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.annotation.OnEvent;
 import org.springframework.stereotype.Service;

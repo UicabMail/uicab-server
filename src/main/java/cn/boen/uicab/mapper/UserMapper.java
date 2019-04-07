@@ -1,6 +1,6 @@
-package cn.uicab.mapper;
+package cn.boen.uicab.mapper;
 
-import cn.uicab.entity.User;
+import cn.boen.uicab.entity.User;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;

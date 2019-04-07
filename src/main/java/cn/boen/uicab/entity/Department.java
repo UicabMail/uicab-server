@@ -1,4 +1,4 @@
-package cn.uicab.entity;
+package cn.boen.uicab.entity;
 
 import lombok.Data;
 

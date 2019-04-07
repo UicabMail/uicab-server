@@ -1,6 +1,6 @@
-package cn.uicab.service;
+package cn.boen.uicab.service;
 
-import cn.uicab.entity.User;
+import cn.boen.uicab.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -29,8 +29,8 @@ public class MIABService {
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(this.username, this.password).build();
 
         MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-        request.add("email", user.getMail());
-        request.add("password", user.getPassword());
+//        request.add("email", user.getMail());
+//        request.add("password", user.getPassword());
 
         try {
             restTemplate.postForObject("https://"+this.host+"/admin/mail/users/add", request, String.class);
@@ -44,7 +44,7 @@ public class MIABService {
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(this.username, this.password).build();
 
         MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-        request.add("email", user.getMail());
+//        request.add("email", user.getMail());
 
         try {
             restTemplate.postForObject("https://"+this.host+"/admin/mail/users/remove", request, String.class);
@@ -58,7 +58,7 @@ public class MIABService {
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(this.username, this.password).build();
 
         MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-        request.add("email", user.getMail());
+//        request.add("email", user.getMail());
         request.add("privilege ", "admin");
 
         try {
@@ -73,7 +73,7 @@ public class MIABService {
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(this.username, this.password).build();
 
         MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-        request.add("email", user.getMail());
+//        request.add("email", user.getMail());
 
         try {
             restTemplate.postForObject("https://"+this.host+"/admin/mail/users/privileges/remove", request, String.class);
