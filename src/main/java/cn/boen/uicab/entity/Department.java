@@ -7,5 +7,5 @@ public class Department {
     private Integer id;
     private String name;
     private String placard;
-    private Integer ownerId;
+    private Integer owner;
 }

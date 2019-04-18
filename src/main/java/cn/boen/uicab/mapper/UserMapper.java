@@ -20,10 +20,10 @@ public interface UserMapper {
 //    User getOne(Long id);
 
     @Select("SELECT * FROM user WHERE username = #{username} and password = #{password}")
-//    @Results({
-////            @Result(property = "nickName", column = "nick_name")
-//    })
     User getOne(User user);
+
+    @Select("SELECT id,username,status FROM user WHERE username LIKE '%#{keyword}%'")
+    List<User> searchUser(String keyword);
 
     @Insert("INSERT INTO user(username, password, mail) VALUES(#{username}, #{password}, #{mail})")
     boolean insert(User user);

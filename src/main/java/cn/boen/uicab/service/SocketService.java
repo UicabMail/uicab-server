@@ -18,13 +18,6 @@ public class SocketService {
     @Autowired
     private SocketIOServer server;
 
-    @Autowired
-    private  SMTPService smtpService;
-
-    @Autowired
-    private IMAPService imapService;
-
-
     private static Map<String, SocketIOClient> clientsMap = new HashMap<String, SocketIOClient>();
 
     @OnConnect

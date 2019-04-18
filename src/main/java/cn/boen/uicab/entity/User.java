@@ -12,5 +12,5 @@ public class User {
     private String mobile;
     private boolean isAdmin;
     private Integer status;
-    private Integer deptId;
+    private Integer dept;
 }
