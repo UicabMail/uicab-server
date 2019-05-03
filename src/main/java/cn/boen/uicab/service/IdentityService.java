@@ -1,6 +1,6 @@
 package cn.boen.uicab.service;
 
-import cn.boen.uicab.entity.Message;
+import cn.boen.uicab.entity.SocketData;
 import cn.boen.uicab.entity.User;
 import cn.boen.uicab.mapper.UserMapper;
 import cn.boen.uicab.statics.EventType;
@@ -15,18 +15,33 @@ public class IdentityService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private  SocketService socketService;
+
     @OnEvent(EventType.REGISTER)
-    private void onRegister(SocketIOClient client, Message message) {
-        client.sendEvent("收到", message);
+    private void onRegister(SocketIOClient client) {
     }
 
     @OnEvent(EventType.LOGIN)
     private void onLogin(SocketIOClient client, User user) {
-        client.sendEvent(EventType.LOGIN, userMapper.getOne(user));
+        User loginedUser =  userMapper.getOne(user);
+
+        if(loginedUser != null) {
+            String uuid = client.getSessionId().toString();
+            SocketData data =  socketService.clientsMap.get(uuid);
+            data.setUser(loginedUser);
+            socketService.clientsMap.put(uuid, data);
+        }
+
+        client.sendEvent(EventType.LOGIN, loginedUser);
     }
 
     @OnEvent(EventType.LOGIN_OUT)
-    private void onLoginOut(SocketIOClient client, Message message) {
-        client.sendEvent("收到", message);
+    private void onLoginOut(SocketIOClient client) {
+    }
+
+    @OnEvent(EventType.CHANGE_PASS)
+    private void onChangePass(SocketIOClient client, User user, String newPass) {
+        client.sendEvent(EventType.CHANGE_PASS, userMapper.updatePass(user.getUsername(),user.getPassword(), newPass));
     }
 }

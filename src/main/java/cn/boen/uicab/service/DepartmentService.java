@@ -1,7 +1,6 @@
 package cn.boen.uicab.service;
 
 import cn.boen.uicab.entity.Department;
-import cn.boen.uicab.entity.User;
 import cn.boen.uicab.mapper.DepartmentMapper;
 import cn.boen.uicab.statics.EventType;
 import com.corundumstudio.socketio.SocketIOClient;
@@ -26,9 +25,7 @@ public class DepartmentService {
     }
 
     @OnEvent(EventType.ADD_DEPT)
-    private void addDept(SocketIOClient client, Department department, User user) {
-        department.setOwner(user.getId());
-
+    private void addDept(SocketIOClient client, Department department) {
         try {
             if(departmentMapper.insert(department)) {
                 client.sendEvent(EventType.ADD_DEPT);

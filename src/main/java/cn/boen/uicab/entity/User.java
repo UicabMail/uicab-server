@@ -10,7 +10,7 @@ public class User {
     private String password;
     private String mail;
     private String mobile;
-    private boolean isAdmin;
-    private Integer status;
+    private Boolean isAdmin;
     private Integer dept;
+    private Integer status;
 }

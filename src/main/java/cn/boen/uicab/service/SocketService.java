@@ -1,5 +1,6 @@
 package cn.boen.uicab.service;
 
+import cn.boen.uicab.entity.SocketData;
 import cn.boen.uicab.statics.EventType;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
@@ -8,7 +9,6 @@ import com.corundumstudio.socketio.annotation.OnDisconnect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,12 +18,14 @@ public class SocketService {
     @Autowired
     private SocketIOServer server;
 
-    private static Map<String, SocketIOClient> clientsMap = new HashMap<String, SocketIOClient>();
+     static Map<String, SocketData> clientsMap = new HashMap<String, SocketData>();
 
     @OnConnect
     public void onConnect(SocketIOClient client) {
         String uuid = client.getSessionId().toString();
-        clientsMap.put(uuid, client);
+        SocketData data =  new SocketData();
+        data.setClient(client);
+        clientsMap.put(uuid, data);
 
         client.sendEvent(EventType.INITIALIZATION);
     }
@@ -34,12 +36,10 @@ public class SocketService {
         clientsMap.remove(uuid);
     }
 
-    public void sendMessageToAllClient(String message) {
-        Collection<SocketIOClient> clients = server.getAllClients();
-        for (SocketIOClient client : clients) {
-            client.sendEvent("hello", message);
-        }
-    }
-
-
+//    public void sendMessageToAllClient(String message) {
+//        Collection<SocketIOClient> clients = server.getAllClients();
+//        for (SocketIOClient client : clients) {
+//            client.sendEvent("hello", message);
+//        }
+//    }
 }

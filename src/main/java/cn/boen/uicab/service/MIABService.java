@@ -44,7 +44,7 @@ public class MIABService {
         RestTemplate restTemplate = restTemplateBuilder.basicAuthentication(this.username, this.password).build();
 
         MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
-//        request.add("email", user.getMail());
+        request.add("email", user.getMail());
 
         try {
             restTemplate.postForObject("https://"+this.host+"/admin/mail/users/remove", request, String.class);
