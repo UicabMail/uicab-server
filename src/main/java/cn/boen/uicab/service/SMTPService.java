@@ -1,17 +1,22 @@
 package cn.boen.uicab.service;
 
+import cn.boen.uicab.entity.Mail;
+import cn.boen.uicab.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
+import java.util.Properties;
 
 @Service
 public class SMTPService {
@@ -21,18 +26,44 @@ public class SMTPService {
     @Autowired
     private JavaMailSender mailSender;
 
-    public void sendSimpleMail(String from, String to, String subject, String content) {
+    @Value("${spring.mail.host}")
+    private String host;
+
+    private Properties properties;
+
+    SMTPService(){
+        Properties properties = new Properties();
+        properties.setProperty("mail.transport.protocol", "smtp");
+        properties.setProperty("mail.smtp.port", "587");
+        properties.setProperty("mail.smtp.auth", "true");
+        properties.setProperty("mail.smtp.starttls.enable", "true");
+        properties.setProperty("mail.smtp.starttls.required", "true");
+
+        this.properties = properties;
+    }
+
+
+    public boolean sendSimpleMail(User user, Mail mail, String[] receives) {
+        JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+        mailSender.setHost(host);
+        mailSender.setUsername(user.getMail());
+        mailSender.setPassword(user.getPassword());
+        mailSender.setJavaMailProperties(properties);
+
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(from);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(content);
+
+        message.setFrom(user.getMail());
+        message.setTo(receives);
+        message.setSubject(mail.getSubject());
+        message.setText(mail.getContent());
 
         try {
             mailSender.send(message);
             logger.info("简单邮件已经发送。");
+            return true;
         } catch (Exception e) {
             logger.error("发送简单邮件时发生异常！", e);
+            return false;
         }
     }
 

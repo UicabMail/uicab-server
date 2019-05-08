@@ -1,119 +1,135 @@
 package cn.boen.uicab.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import cn.boen.uicab.entity.Mail;
+import cn.boen.uicab.entity.SocketData;
+import cn.boen.uicab.entity.User;
+import com.sun.mail.imap.IMAPFolder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 @Service
 public class IMAPService {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Value("${spring.mail.host}")
     private String host;
 
-    @Value("${spring.mail.username}")
-    private String username;
+    private Properties properties;
 
-    @Value("${spring.mail.password}")
-    private String password;
+    private Session imapSession;
 
-    /**
-     * 接收邮件
-     */
-    public void receive(){
-        Properties props = System.getProperties();
-        props.setProperty("mail.imap.host",this.host);
-        props.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-        props.setProperty("mail.imap.socketFactory.fallback", "false");
-        props.setProperty("mail.imap.starttls.enable", "true");
-        props.setProperty("mail.imap.port", "143");
-        props.setProperty("mail.imap.socketFactory.port", "993");
-        props.setProperty("mail.store.protocol", "imap");
-        Session session = Session.getInstance(props);
-        session.setDebug(false);
-        URLName urln = new URLName("imap", this.host, 143, null,this.username,this.password);
+    IMAPService(){
+        Properties properties = new Properties();
+
+        properties.setProperty("mail.imap.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        properties.setProperty("mail.imap.socketFactory.fallback", "false");
+        properties.setProperty("mail.imap.starttls.enable", "true");
+        properties.setProperty("mail.imap.port", "143");
+        properties.setProperty("mail.imap.socketFactory.port", "993");
+        properties.setProperty("mail.store.protocol", "imap");
+
+        this.properties = properties;
+    }
+
+    private  Session getImapSession(){
+
+        if(imapSession == null) {
+            properties.setProperty("mail.imap.host",host);
+
+            Session session = Session.getInstance(properties);
+            session.setDebug(false);
+
+            imapSession = session;
+        }
+
+        return imapSession;
+    }
+
+    public List<Mail> receive(SocketData socketData, String folderName, int page){
 
         try {
-            Store store = session.getStore(urln);
-            store.connect();
-            /**
-             *  获得收件箱INBOX
-             *  除了收件箱，其他的可以使用以下方法查看到
-             *  Folder defaultFolder = store.getDefaultFolder();
-             *  Folder[] allFolder = defaultFolder.list();
-             *  for(int i = 0; i < allFolder.length; i++) {
-             *  		System.out.println(allFolder[i].getName());
-             *  }
-             *  比如垃圾箱：Junk  已删除：Deleted Messages  草稿：Drafts  已发送：Sent Messages
-             */
-            Folder folder = store.getFolder("INBOX");
-            /**
-             * Folder.READ_ONLY：只读权限
-             * Folder.READ_WRITE：可读可写（可以修改邮件的状态）
-             */
+            User user =  socketData.getUser();
+            Store store = socketData.getImapStore();
+
+            if(store == null || !store.isConnected()) {
+                URLName urlName = new URLName("imap", host, 143, null,user.getMail(),user.getPassword());
+                store =  getImapSession().getStore(urlName);
+                store.connect();
+
+                socketData.setImapStore(store);
+            }
+//               比如垃圾箱：Junk  已删除：Deleted Messages  草稿：Drafts  已发送：Sent INBOX
+            Folder folder = store.getFolder(folderName);
             folder.open(Folder.READ_WRITE);
 
-            System.out.println("未读邮件数: " + folder.getUnreadMessageCount());
-            System.out.println("邮件总数: " + folder.getMessageCount());
+            int start = (page - 1) * 50 + 1 ;
+            int end = Math.min(start + 50, folder.getMessageCount());
 
-            // 得到收件箱中的所有邮件,并解析
-//        Message[] messages = folder.getMessages();
-//        parseMessage(messages);
+            Message[] messages = folder.getMessages(start , end);
 
-            //删除邮件第一封邮件
-//        deleteMessage(messages[0]);
+            FetchProfile fp = new FetchProfile();
+            fp.add(FetchProfile.Item.ENVELOPE);
+            fp.add(IMAPFolder.FetchProfileItem.FLAGS);
+            fp.add(IMAPFolder.FetchProfileItem.CONTENT_INFO);
 
+            fp.add("X-mailer");
+
+            folder.fetch(messages, fp);
+
+
+            List<Mail> mails= parseMessage(messages);
             folder.close(true);
-            store.close();
+
+            return  mails;
         } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return  null;
         }
     }
 
-    /**
-     * 解析邮件
-     */
-    public static void parseMessage(Message... messages) throws MessagingException, IOException {
+    public static List<Mail> parseMessage(Message... messages) throws MessagingException, IOException {
+        long t = System.currentTimeMillis();
+
+        List mails = new ArrayList<Mail>();
+
         if (messages == null || messages.length < 1)
             throw new MessagingException("未找到要解析的邮件!");
-        // 解析所有邮件
-        int count = messages.length;
-        for (int i = count-1 ; i >= 0; i--) {
-            MimeMessage msg = (MimeMessage) messages[i];
-            System.out.println("------------------解析第" + msg.getMessageNumber() + "封邮件-------------------- ");
-            // 如果有编码，可以先解码： MimeUtility.decodeText(msg.getSubject());
-            System.out.println("主题: " + msg.getSubject());
-            System.out.println("发件人名称: " + getFrom(msg)[0]);
-            System.out.println("发件人邮箱: " + getFrom(msg)[1]);
-            System.out.println("收件人：" + getReceiveAddress(msg, null));
-            System.out.println("发送时间：" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(msg.getSentDate()));
-            System.out.println("是否已读：" + msg.getFlags().contains(Flags.Flag.SEEN));
-            System.out.println("邮件优先级：" + getPriority(msg));
-            System.out.println("是否需要回执：" + (msg.getHeader("Disposition-Notification-To") != null ? true : false));
-            System.out.println("邮件大小：" + msg.getSize() * 1024 + "kb");
+        for (Message msg: messages) {
+            Mail mail = new Mail();
+            mail.setSubject(msg.getSubject());
+            String [] fromInfo = getFrom(msg);
+            mail.setFromName(fromInfo[0]);
+            mail.setFrom(fromInfo[1]);
+            mail.setTo(getReceiveAddress(msg, null));
+            mail.setTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(msg.getSentDate()));
+            mail.setSeen(msg.getFlags().contains(Flags.Flag.SEEN));
+//            System.out.println("邮件优先级：" + getPriority(msg));
+//            System.out.println("是否需要回执：" + (msg.getHeader("Disposition-Notification-To") != null ? true : false));
+//            System.out.println("邮件大小：" + msg.getSize() * 1024 + "kb");
             StringBuffer content = new StringBuffer(100);
             getMailTextContent(msg, content);
-            System.out.println("邮件正文：" + content);
+            mail.setContent(content.toString());
 
-            boolean isContainerAttachment = isContainAttachment(msg);
-            System.out.println("是否包含附件：" + isContainerAttachment);
-            if (isContainerAttachment) {
-                saveAttachment(msg, "/Users/dev/Desktop/"); // 保存附件
-            }
-
-            System.out.println("------------------第" + msg.getMessageNumber() + "封邮件解析结束-------------------- ");
-            System.out.println();
-
+//            boolean isContainerAttachment = isContainAttachment(msg);
+//            System.out.println("是否包含附件：" + isContainerAttachment);
+//            if (isContainerAttachment) {
+//                saveAttachment(msg, "/Users/dev/Desktop/"); // 保存附件
+//            }
+            mails.add(mail);
         }
+
+        System.out.println(System.currentTimeMillis() - t);
+
+        return mails;
     }
 
     /**
@@ -136,7 +152,7 @@ public class IMAPService {
     /**
      * 获得邮件发件人
      */
-    public static String[] getFrom(MimeMessage msg) throws MessagingException, UnsupportedEncodingException {
+    public static String[] getFrom(Message msg) throws MessagingException, UnsupportedEncodingException {
         String[] from = new String[2];
         Address[] froms = msg.getFrom();
         if (froms.length < 1)
@@ -154,7 +170,7 @@ public class IMAPService {
      * Message.RecipientType.BCC 密送
      * @return 收件人1 <邮件地址1>, 收件人2 <邮件地址2>, ...
      */
-    public static String getReceiveAddress(MimeMessage msg, Message.RecipientType type) throws MessagingException {
+    public static String getReceiveAddress(Message msg, Message.RecipientType type) throws MessagingException {
         StringBuffer receiveAddress = new StringBuffer();
         Address[] addresss = null;
         if (type == null) {
@@ -211,7 +227,7 @@ public class IMAPService {
      * 获得邮件的优先级
      * @return 1(High):紧急 3:普通(Normal) 5:低(Low)
      */
-    public static String getPriority(MimeMessage msg) throws MessagingException {
+    public static String getPriority(Message msg) throws MessagingException {
         String priority = "普通";
         String[] headers = msg.getHeader("X-Priority");
         if (headers != null) {
@@ -227,7 +243,7 @@ public class IMAPService {
     }
 
     public static void getMailTextContent(Part part, StringBuffer content) throws MessagingException, IOException {
-        System.out.println(part.getContentType());
+//        System.out.println(part.getContentType());
         boolean isContainTextAttach = part.getContentType().indexOf("name") > 0;
         if (part.isMimeType("text/*") && !isContainTextAttach) {
             content.append(part.getContent().toString());
