@@ -67,21 +67,29 @@ public class SMTPService {
         }
     }
 
-    public void sendHtmlMail(String to, String subject, String content) {
-        MimeMessage message = mailSender.createMimeMessage();
-
+    public boolean sendHtmlMail(User user, Mail mail, String[] receives)  {
         try {
-            //true表示需要创建一个multipart message
+            JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+            mailSender.setHost(host);
+            mailSender.setUsername(user.getMail());
+            mailSender.setPassword(user.getPassword());
+            mailSender.setJavaMailProperties(properties);
+            mailSender.setDefaultEncoding("UTF-8");
+
+            MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            helper.setFrom("");
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(content, true);
+
+            helper.setFrom(user.getMail());
+            helper.setTo(receives);
+            helper.setSubject(mail.getSubject());
+            helper.setText(mail.getContent(), true);
 
             mailSender.send(message);
-            logger.info("html邮件发送成功");
-        } catch (MessagingException e) {
-            logger.error("发送html邮件时发生异常！", e);
+            logger.info("HTML邮件已经发送。");
+            return true;
+        } catch (Exception e) {
+            logger.error("发送HTML邮件时发生异常！", e);
+            return false;
         }
     }
 

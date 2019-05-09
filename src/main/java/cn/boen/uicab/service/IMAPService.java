@@ -118,6 +118,7 @@ public class IMAPService {
             StringBuffer content = new StringBuffer(100);
             getMailTextContent(msg, content);
             mail.setContent(content.toString());
+            mail.setContentType(msg.getContentType());
 
 //            boolean isContainerAttachment = isContainAttachment(msg);
 //            System.out.println("是否包含附件：" + isContainerAttachment);

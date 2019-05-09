@@ -23,15 +23,18 @@ public class MailService {
     private IMAPService imapService;
 
     @OnEvent(EventType.SEND)
-    private void send(SocketIOClient client, Mail mail, String[] receives) {
-        System.out.println(2);
+    private void send(SocketIOClient client, Mail mail, String[] receives,Boolean isHtml ) {
         SocketData socketData = socketService.clientsMap.get(client.getSessionId().toString());
 
         if(socketData != null) {
             User user =  socketData.getUser();
 
             if(user != null) {
-                client.sendEvent(EventType.SEND, smtpService.sendSimpleMail(user, mail, receives));
+                if(isHtml) {
+                    client.sendEvent(EventType.SEND, smtpService.sendHtmlMail(user, mail, receives));
+                }else {
+                    client.sendEvent(EventType.SEND, smtpService.sendSimpleMail(user, mail, receives));
+                }
             }
         }
     }
