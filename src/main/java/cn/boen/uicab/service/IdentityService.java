@@ -26,7 +26,13 @@ public class IdentityService {
     private void onLogin(SocketIOClient client, User user) {
         User loginedUser =  userMapper.getOne(user);
 
-        if(loginedUser != null) {
+        if(loginedUser != null ) {
+
+            if(loginedUser.getStatus() == 1) {
+                client.sendEvent(EventType.ERROR_MESSAGE, "账户被冻结，请联系管理员");
+                return;
+            }
+
             String uuid = client.getSessionId().toString();
             SocketData data =  socketService.clientsMap.get(uuid);
             data.setUser(loginedUser);

@@ -10,4 +10,5 @@ public class SocketData {
     private User user;
     private SocketIOClient client;
     private Store imapStore;
+//    private Map<String,Map<Folder,  Message[]>> source;
 }

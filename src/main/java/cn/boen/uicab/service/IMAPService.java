@@ -67,9 +67,22 @@ public class IMAPService {
 
                 socketData.setImapStore(store);
             }
+
+//            Map<Folder, Message[]> map =  socketData.getSource().get(folderName);
+
+//            if(map == null) {
+//
+//            }
 //               比如垃圾箱：Junk  已删除：Deleted Messages  草稿：Drafts  已发送：Sent INBOX
+
+
             Folder folder = store.getFolder(folderName);
+
             folder.open(Folder.READ_WRITE);
+
+            if(!folder.exists()){
+                return null;
+            };
 
             int start = (page - 1) * 50 + 1 ;
             int end = Math.min(start + 50, folder.getMessageCount());
@@ -80,7 +93,6 @@ public class IMAPService {
             fp.add(FetchProfile.Item.ENVELOPE);
             fp.add(IMAPFolder.FetchProfileItem.FLAGS);
             fp.add(IMAPFolder.FetchProfileItem.CONTENT_INFO);
-
             fp.add("X-mailer");
 
             folder.fetch(messages, fp);
